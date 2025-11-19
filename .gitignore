@@ -1,1 +1,6 @@
-/data/
+/blood-cells/
+
+*.csv
+*.jpg
+*.png
+*.xml
