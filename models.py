@@ -24,10 +24,10 @@ class Net(nn.Module):
         return x
     
 class LeNet_5(nn.Module):
-    def __init__(self, input_size=32*32, output_classes=2):
+    def __init__(self, input_size=128*128, output_classes=2, in_channel=1):
         super().__init__()
         self.cnn_model = nn.Sequential(
-            nn.Conv2d(1, 6, 5, padding=2), 
+            nn.Conv2d(in_channel, 6, 5, padding=2), 
             nn.Sigmoid(),       
             nn.MaxPool2d(2, stride=2),  
             nn.Conv2d(6, 16, 5, stride=1, padding=2),       
@@ -35,7 +35,7 @@ class LeNet_5(nn.Module):
             nn.MaxPool2d(2, stride=2)
         )
         self.fc_model = nn.Sequential(
-            nn.Linear(16*8*8, 120),         
+            nn.Linear(16*(input_size // 16), 120),         
             nn.Sigmoid(),
             nn.Linear(120, 84),          
             nn.Sigmoid(),
