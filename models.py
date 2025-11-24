@@ -92,3 +92,68 @@ class VGGNet(nn.Module):
                 layers += [nn.Conv2d(in_channels, v, kernel_size=3, padding=1), nn.ReLU(inplace=True)]
                 in_channels = v
         return nn.Sequential(*layers)
+    
+class CustomCNN(nn.Module):
+    def __init__(self, output_classes=4, in_channels=3, input_size=224):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(in_channels, 128, kernel_size=8, stride=3),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(128),
+
+            nn.Conv2d(128, 256, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.MaxPool2d(kernel_size=3),
+
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+
+            nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(512),
+            nn.MaxPool2d(kernel_size=2),
+
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(512),
+
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(512),
+            nn.MaxPool2d(kernel_size=2),
+
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(512),
+            nn.MaxPool2d(kernel_size=2),
+        )
+
+        # 計算 flatten 後的維度
+        with torch.no_grad():
+            dummy = torch.zeros(1, in_channels, input_size, input_size)
+            out = self.features(dummy)
+            flatten_dim = out.view(1, -1).size(1)
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(flatten_dim, 1024),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(1024, 1024),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(1024, output_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = self.classifier(x)
+        return x
