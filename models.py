@@ -28,10 +28,12 @@ class LeNet_5(nn.Module):
         super().__init__()
         self.cnn_model = nn.Sequential(
             nn.Conv2d(in_channels, 6, 5, padding=2), 
-            nn.Sigmoid(),       
+            nn.Sigmoid(), 
+            nn.BatchNorm2d(6),      
             nn.MaxPool2d(2, stride=2),  
             nn.Conv2d(6, 16, 5, stride=1, padding=2),       
-            nn.ReLU(),
+            nn.Sigmoid(),
+            nn.BatchNorm2d(16),
             nn.MaxPool2d(2, stride=2)
         )
 
