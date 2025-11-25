@@ -57,6 +57,50 @@ class LeNet_5(nn.Module):
         x = self.fc_model(x)
 
         return x
+    
+class AlexNet(nn.Module):
+    def __init__(self, input_size=224, output_classes=4, in_channels=3):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(in_channels, 96, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(96),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(96, 256, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(256, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.MaxPool2d(kernel_size=3, stride=2)
+        )
+
+        # 計算 flatten 維度
+        with torch.no_grad():
+            dummy = torch.zeros(1, in_channels, input_size, input_size)
+            out = self.features(dummy)
+            flatten_dim = out.view(1, -1).size(1)
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(flatten_dim, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(4096, output_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = self.classifier(x)
+        return x
 
 
 class VGGNet(nn.Module):
