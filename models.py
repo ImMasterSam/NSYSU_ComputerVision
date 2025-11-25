@@ -24,7 +24,7 @@ class Net(nn.Module):
         return x
     
 class LeNet_5(nn.Module):
-    def __init__(self, input_size=128*128, output_classes=2, in_channels=1):
+    def __init__(self, input_size=224, output_classes=4, in_channels=3):
         super().__init__()
         self.cnn_model = nn.Sequential(
             nn.Conv2d(in_channels, 6, 5, padding=2), 
@@ -34,8 +34,15 @@ class LeNet_5(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2, stride=2)
         )
+
+        with torch.no_grad():
+            dummy = torch.zeros(1, in_channels, input_size, input_size)
+            out = self.cnn_model(dummy)
+            flatten_dim = out.view(1, -1).size(1)
+
         self.fc_model = nn.Sequential(
-            nn.Linear(16*(input_size // 16), 120),         
+            nn.Flatten(),
+            nn.Linear(flatten_dim, 120),         
             nn.Sigmoid(),
             nn.Linear(120, 84),          
             nn.Sigmoid(),
@@ -45,7 +52,6 @@ class LeNet_5(nn.Module):
     def forward(self, x):
         
         x = self.cnn_model(x)
-        x = x.view(x.size(0), -1)
         x = self.fc_model(x)
 
         return x
@@ -59,7 +65,7 @@ class VGGNet(nn.Module):
         'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
     }
 
-    def __init__(self, vgg_name='VGG16', output_classes=2, in_channels=3, input_size=128):
+    def __init__(self, vgg_name='VGG16', output_classes=4, in_channels=3, input_size=224):
         super().__init__()
         self.cnn_model = self.make_layers(self.cfgs[vgg_name], in_channels)
         # 計算最後一層 feature map 的大小
@@ -68,6 +74,7 @@ class VGGNet(nn.Module):
             out = self.cnn_model(dummy)
         flatten_dim = out.view(1, -1).size(1)
         self.fc_model = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(flatten_dim, 4096),
             nn.ReLU(True),
             nn.Dropout(),
@@ -78,9 +85,10 @@ class VGGNet(nn.Module):
         )
 
     def forward(self, x):
+
         x = self.cnn_model(x)
-        x = torch.flatten(x, 1)
         x = self.fc_model(x)
+        
         return x
 
     def make_layers(self, cfg, in_channels):
@@ -89,7 +97,7 @@ class VGGNet(nn.Module):
             if v == 'M':
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             else:
-                layers += [nn.Conv2d(in_channels, v, kernel_size=3, padding=1), nn.ReLU(inplace=True)]
+                layers += [nn.Conv2d(in_channels, v, kernel_size=3, padding=1), nn.ReLU(inplace=True), nn.BatchNorm2d(v)]
                 in_channels = v
         return nn.Sequential(*layers)
     
@@ -136,7 +144,6 @@ class CustomCNN(nn.Module):
             nn.MaxPool2d(kernel_size=2),
         )
 
-        # 計算 flatten 後的維度
         with torch.no_grad():
             dummy = torch.zeros(1, in_channels, input_size, input_size)
             out = self.features(dummy)
