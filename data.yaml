@@ -1,6 +1,6 @@
-path:  ./blood-cells/dataset-master/dataset-master/
-train: JPEGImages/
-val: JPEGImages/
+path: ./blood-cells/dataset-master/dataset-master\yolo-data
+train: images/train
+val: images/val
 
-nc: 1          
-names: ['WBC'] 
+nc: 1
+names: ['RBC']
