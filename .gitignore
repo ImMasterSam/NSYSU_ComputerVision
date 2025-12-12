@@ -2,7 +2,9 @@
 /.venv/
 
 /blood-cells/
+/run/
 
+./*.pt
 *.csv
 *.jpg
 *.png
