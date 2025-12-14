@@ -1,6 +1,6 @@
 /.venv/
+/.gradio/
 **/__pycache__/
-/.venv/
 
 /blood-cells/
 /run/
