@@ -1,0 +1,6 @@
+path: ./blood-cells/dataset-master/dataset-master\yolo-data
+train: images/train
+val: images/val
+
+nc: 1
+names: ['RBC']
