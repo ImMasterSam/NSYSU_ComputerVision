@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as tv_models
 
 class Net(nn.Module):
     def __init__(self, input_size=128*128, output_classes=2):
@@ -210,3 +211,24 @@ class CustomCNN(nn.Module):
         x = self.features(x)
         x = self.classifier(x)
         return x
+
+class ResNet(nn.Module):
+    def __init__(self, output_classes=4, in_channels=3, input_size=224, model_name='resnet18'):
+        super().__init__()
+        if model_name == 'resnet18':
+            self.model = tv_models.resnet18(weights=None)
+        elif model_name == 'resnet34':
+            self.model = tv_models.resnet34(weights=None)
+        elif model_name == 'resnet50':
+            self.model = tv_models.resnet50(weights=None)
+        else:
+            raise ValueError(f"Unsupported ResNet model: {model_name}")
+
+        if in_channels != 3:
+            self.model.conv1 = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_ftrs, output_classes)
+
+    def forward(self, x):
+        return self.model(x)
